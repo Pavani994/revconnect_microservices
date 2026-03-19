@@ -1,0 +1,143 @@
+================================================================================
+                          REVCONNECT - PROJECT ABSTRACT
+              A Microservices-Based Professional Social Media Platform
+================================================================================
+
+1. INTRODUCTION
+--------------------------------------------------------------------------------
+RevConnect is a full-stack professional social media platform built using a
+microservices architecture. The frontend is developed with Angular 19 and the
+backend comprises 7 independent Spring Boot 3 microservices, each with its own
+MySQL database. The system uses Eureka for service discovery, Spring Cloud
+Gateway as the API gateway, and Feign clients for inter-service communication.
+
+2. ARCHITECTURE OVERVIEW
+--------------------------------------------------------------------------------
+The platform follows a Database-per-Service pattern with the following components:
+
+  Frontend:          Angular 19 (TypeScript, RxJS, TailwindCSS) — localhost:4200
+  API Gateway:       Spring Cloud Gateway (JWT auth, routing, circuit breakers) — :8080
+  Eureka Server:     Netflix Eureka (service discovery & registration) — :8761
+  User Service:      User management, auth, settings, search — :8081 → MySQL :3307
+  Post Service:      Post CRUD, scheduling, media, CTA buttons — :8082 → MySQL :3308
+  Feed Service:      Personalized feed aggregation — :8083
+  Interaction Svc:   Likes, comments, shares, views, analytics — :8084 → MySQL :3309
+  Connection Svc:    Follow/unfollow, connection stats — :8085 → MySQL :3310
+  Notification Svc:  Push/email notifications, preferences — :8086 → MySQL :3311
+
+All MySQL databases run in isolated Docker containers via Docker Compose.
+
+3. KEY FEATURES
+--------------------------------------------------------------------------------
+
+  3.1 Authentication & Authorization
+      - JWT-based stateless authentication (HS256, 256-bit secret)
+      - User registration with email verification (UUID verification codes)
+      - Forgot/reset password with email-based reset tokens
+      - BCrypt password hashing
+      - API Gateway validates JWT and injects X-User-Id header for downstream services
+
+  3.2 User Profiles & Privacy
+      - Three user types: STANDARD, BUSINESS, CREATOR
+      - Profile customization: avatar, cover photo, bio, location, website
+      - Privacy controls: PUBLIC / PRIVATE
+      - Private accounts excluded from search, explore, and suggestions
+      - Email verification required for account activation
+
+  3.3 Post Creation & Business Tools
+      - Text, image, and video posts with media upload
+      - Scheduled posts (saved with isPublished=false, published at scheduled time)
+      - Business accounts: Post categories (Standard, Announcement, Update),
+        Call-to-Action buttons (Shop Now, Learn More, Sign Up, etc.) with custom URLs
+      - Creator accounts: All business features PLUS paid partnership disclosure
+        (brand partner name) and product tagging (comma-separated tags)
+
+  3.4 Social Interactions
+      - Likes with duplicate prevention (unique constraint: user_id + post_id)
+      - Nested comments with replies (parentId-based threading)
+      - Post sharing with optional comment (REPOST type)
+      - Real view tracking with unique-per-user counting (PostView entity)
+      - Bookmarks for saving posts
+
+  3.5 Personalized Feed
+      - Feed Service aggregates posts from followed users + own posts
+      - Fetches following IDs from Connection Service via Feign
+      - Posts enriched with author info from User Service
+      - Sorted by creation date (newest first), pinned posts prioritized
+      - Paginated loading (page/size parameters)
+
+  3.6 Direct Messaging
+      - Real-time messaging via WebSocket (STOMP protocol)
+      - Message types: TEXT, IMAGE, VOICE
+      - Conversation list with last message preview and unread count
+      - Conversations sorted by newest message first
+      - Read receipts and typing indicators
+
+  3.7 Connections (Follow/Unfollow)
+      - Follow/unfollow with notification to target user
+      - Follower/following counts via connection-stats endpoint
+      - Mutual connections discovery
+      - Suggested users (excludes private & self)
+
+  3.8 Notifications
+      - Granular per-type preferences: likes, comments, shares, followers,
+        connection requests, email notifications, push notifications
+      - Notification types: LIKE, COMMENT, SHARE, FOLLOW, MENTION, SYSTEM
+      - Preferences checked before sending (respects user opt-out)
+      - Stored in UserSettings entity with boolean toggles
+
+  3.9 Explore & Search
+      - Global search across users and posts
+      - Debounced search input with tabs (All / Users / Posts)
+      - Private accounts filtered from all search results
+      - Trending topics and hashtag discovery
+
+  3.10 Analytics Dashboard
+      - Available for Business and Creator accounts
+      - Overview: total views, likes, comments, shares, followers, posts
+      - Per-post performance breakdown
+      - Real view counting (unique per user, no inflation on refresh)
+      - Data aggregated from Interaction, Connection, and Post services via Feign
+
+  3.11 Stories
+      - 24-hour ephemeral story cards
+      - Horizontal scrollable feed at top of home page
+      - Create and view stories with media support
+
+4. TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+  Frontend:    Angular 19, TypeScript, RxJS, TailwindCSS, Font Awesome
+  Backend:     Java 17, Spring Boot 3, Spring Cloud, Spring Security
+  Gateway:     Spring Cloud Gateway with JWT filter & circuit breakers
+  Discovery:   Netflix Eureka Server
+  IPC:         OpenFeign declarative REST clients
+  Database:    MySQL 8 (5 Docker containers), JPA/Hibernate, Spring Data
+  Containers:  Docker, Docker Compose
+  Auth:        JWT (io.jsonwebtoken), BCrypt
+  Build:       Maven, Angular CLI
+
+5. ALGORITHMS & DESIGN PATTERNS
+--------------------------------------------------------------------------------
+  - Database per Service:     Each microservice owns its database schema
+  - API Gateway Pattern:      Single entry point with auth, routing, load balancing
+  - Service Discovery:        Eureka-based dynamic service registration
+  - Circuit Breaker:          Resilience4j via Spring Cloud Circuit Breaker
+  - Optimistic UI Updates:    Frontend updates UI before server confirmation
+  - Unique Constraint:        Prevents duplicate likes, views per user
+  - Feign Client Composition: Services call each other via declarative HTTP clients
+  - JWT Stateless Auth:       No server-side session; token carries user identity
+  - Event-Driven Notifications: Actions trigger cross-service notification creation
+
+6. DEPENDENCIES BETWEEN SERVICES
+--------------------------------------------------------------------------------
+  Post Service      → User Service (author enrichment), Connection Service (feed)
+  Feed Service      → Post Service (posts), Connection Service (following IDs)
+  Interaction Svc   → User Service (author data), Notification Service (alerts),
+                      Post Service (post owner lookup)
+  Connection Svc    → Notification Service (follow alerts)
+  Notification Svc  → User Service (notification preferences check)
+  API Gateway       → All services (routing), User Service (JWT validation)
+
+================================================================================
+                              END OF ABSTRACT
+================================================================================

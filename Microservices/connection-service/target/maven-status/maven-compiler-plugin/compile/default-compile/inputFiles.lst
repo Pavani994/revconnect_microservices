@@ -1,0 +1,9 @@
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\dto\response\ConnectionResponse.java
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\ConnectionServiceApplication.java
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\controller\ConnectionController.java
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\repository\ConnectionRepository.java
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\client\NotificationServiceClient.java
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\client\UserServiceClient.java
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\dto\response\ApiResponse.java
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\enums\ConnectionStatus.java
+D:\Microservices\connection-service\src\main\java\org\revature\revconnect\connectionservice\model\Connection.java
